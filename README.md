@@ -1,4 +1,5 @@
 SimplestXmlParser
 =================
 
-PHP class, that parses xml. Very small and simple.
+PHP class, that parses xml.
+Very small and simple.
