@@ -9,7 +9,8 @@
  * @todo: optimization
  */
 class SimplestXmlParser {
-	const MAX_DEPTH=20;
+	const MAX_DEPTH=20;#increase for many leveled trees
+	const TO_UTF8=1;#convert content to utf8
 	private function __construct(){}
 	private function __clone(){}
 	/**
@@ -28,7 +29,7 @@ class SimplestXmlParser {
 		];
 		preg_match($regs[0],$xml,$m);
 		if($m){
-			if(!empty($m[2])){
+			if(!empty($m[2]) && self::TO_UTF8){
 				$xml2=iconv($m[2],'UTF-8',$xml);
 				if($xml2) $xml=$xml2;
 			}
@@ -64,8 +65,6 @@ class SimplestXmlParser {
 			}else{
 				$xml=preg_replace('!\s*<.*?/>!s','',$xml,1);
 			}
-		}else{
-			var_dump($xml);die;
 		}
 		return $tag;
 	}
@@ -112,22 +111,25 @@ class SimplestXmlObj{
 			$this->_attr[$name]:
 			null;
 	}
-	public function __toString(){
-		$str='';
-		$str.=$this->_name;
-		if($this->_attr){
-			$attr=[];
-			foreach($this->_attr as $k=>$v)
-				$attr[]="$k=>$v";
-			$str.='('.implode(',',$attr).')';
-		}
-		$str.=':';
+	public function xmlize($tabLvl=0){
+		$tabs=$tabLvl>-1?("\n".str_repeat("\t",$tabLvl+1)):'';
+		$nextLine=$tabLvl>-1?("\n".str_repeat("\t",max($tabLvl,0))):'';
+		$nextTab=$tabLvl>-1?$tabLvl+1:-1;
+		$attr=[];
+		foreach($this->_attr as $k=>$v)
+			$attr[]="$k=\"$v\"";
+		$attr=$attr?(' '.implode(' ',$attr)):'';
 		if($this->_val){
-			$str.=$this->_val;
+			$val=$tabs.$this->_val.$nextLine;
 		}elseif($this->_chi){
-			$str.="\n".preg_replace('!^(.)!m',"\t$1",implode("\n",$this->_chi));
-		}
-		return $str;
+			$chi=[];
+			foreach($this->_chi as $ch)
+				$chi[]=$tabs.$ch->xmlize($nextTab).$nextLine;
+			$val=implode('',$chi);
+		}else $val='';
+		return $val?
+				"<$this->_name$attr>$val</$this->_name>":
+				"<$this->_name$attr />";
 	}
 
 	public function addChild(SimplestXmlObj $obj){

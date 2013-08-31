@@ -2,9 +2,13 @@
 #test and show usage
 include 'SimplestXmlParser.php';
 
-$xml='<?xml version="1.0" ?>
-		<x par1="val1"> 
-		<y>1</y><!--<comment>
-	1</comment>--><y par2="asdlaskd">2</y><z>3</z>	</x>';
+$xml=file_get_contents('http://www.w3schools.com/xml/cd_catalog.xml');
 $obj=SimplestXmlParser::parse($xml);
-echo $obj;
+$xmlized=$obj->xmlize();
+
+$compare1=preg_replace(['/<\?xml.*?>/s','/<!.*?>/s','!\s!s'],'',$xml);
+$compare2=preg_replace('!\s!s','',$xmlized);
+if ($compare1 != $compare2)
+	echo "Error! Please, send feedback at https://github.com/13DaGGeR/SimplestXmlParser/issues .\n";
+else
+	echo "It works!";
